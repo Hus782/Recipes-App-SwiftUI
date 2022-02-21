@@ -10,7 +10,7 @@ import Foundation
 protocol AccessTokenManagerProtocol: AnyObject {
     func saveToken(token: String)
     func getToken() -> String?
-    func hasValidSession() -> Bool
+    func hasValidSession()
     func deleteToken() throws
 }
 
@@ -18,7 +18,7 @@ class AccessTokenManager: AccessTokenManagerProtocol, ObservableObject {
     private let keychainService: KeychainServiceProtocol
     private let account = "default"
     private let service = "accessToken"
-        
+    
     @Published var isAuthorized: Bool = false
     
     init(keychainService: KeychainServiceProtocol = KeychainService()) {
@@ -58,30 +58,30 @@ class AccessTokenManager: AccessTokenManagerProtocol, ObservableObject {
         }
         return ""
     }
-
+    
     // Decode token logic
-    func hasValidSession() -> Bool {
+    func hasValidSession() {
         let token =
         getToken()
         if let token = token, !token.isEmpty {
             let decodedToken = decode(jwt: token)
             guard let expDateUinx = decodedToken["exp"] else {
                 isAuthorized = false
-                return false }
+                return }
             guard let time = Double(String(describing: expDateUinx)) else {
                 isAuthorized = false
-                return false }
+                return }
             let expTokenDate = Date(timeIntervalSince1970: (time ))//+ (2*60*60)))
             let now = Date()
             if now > expTokenDate {
                 isAuthorized = false
-                return false
+                return
             }
             isAuthorized = true
-            return true
+            return
         }
         isAuthorized = false
-        return false
+        return
     }
     
     private func decode(jwt: String) -> [String: Any] {

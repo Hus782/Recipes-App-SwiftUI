@@ -15,6 +15,7 @@ class LoginViewModel: ObservableObject {
     @Published var token = ""
     @Published var email: String = "hyusein.hyusein@paysafe.com"
     @Published var password: String = "Test1234"
+    @Published var attempts: Int = 0
     
     private let client: AuthenticationClient
     
@@ -36,7 +37,9 @@ class LoginViewModel: ObservableObject {
             self?.isLoading = false
             switch result {
             case .failure(let error):
-                
+                withAnimation {
+                    self?.attempts+=1
+                }
                 print(error)
             case .success(let token):
                 self?.token = token

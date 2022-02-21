@@ -26,7 +26,14 @@ class HttpLoader {
     func load<T: Codable>(_ request: URLRequest,
                           _ model: T.Type,
                           completion: @escaping (Result<T, NetworkError>) -> Void) {
-        session.dataTask(with: request) { data, response, _ in
+        session.dataTask(with: request) {[weak self] data, response, _ in
+            guard let self = self else {
+                DispatchQueue.main.async {
+                    completion(.failure(.responseError))
+                }
+                return
+            }
+            
             if !self.isResponseSuccess(response: response) {
                 DispatchQueue.main.async {
                     completion(.failure(.responseError))
@@ -48,7 +55,7 @@ class HttpLoader {
     }
     
     func load(_ request: URLRequest,
-                          completion: @escaping (Result<String?, NetworkError>) -> Void) {
+              completion: @escaping (Result<String?, NetworkError>) -> Void) {
         session.dataTask(with: request) { data, response, _ in
             if !self.isResponseSuccess(response: response) {
                 DispatchQueue.main.async {
@@ -56,11 +63,11 @@ class HttpLoader {
                 }
                 return
             }
-
-                DispatchQueue.main.async {
-                    completion(.success(nil))
-                }
- 
+            
+            DispatchQueue.main.async {
+                completion(.success(nil))
+            }
+            
         }.resume()
     }
     

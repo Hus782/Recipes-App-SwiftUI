@@ -7,10 +7,21 @@
 
 import SwiftUI
 
+struct ShakeEffect : GeometryEffect {
+    var travelDistance: Float = 6
+    var numOfShakes: Float = 6
+    var animatableData: Float
+    
+    func effectValue(size: CGSize) -> ProjectionTransform {
+        ProjectionTransform(CGAffineTransform(translationX: CGFloat(travelDistance * sin(animatableData * .pi * numOfShakes)), y: 0))
+    }
+}
+
 struct LoginView: View {
     
     @EnvironmentObject var tokenManager: AccessTokenManager
     @StateObject private var viewModel = LoginViewModel()
+    
     
     private func login() {
         viewModel.login()
@@ -35,24 +46,30 @@ struct LoginView: View {
                 .padding()
             //                       .background(lightGreyColor)
                 .cornerRadius(5.0)
-                .padding(.bottom, 20)
-                .autocapitalization(.none)
-                .disableAutocorrection(true)
-            
-            SecureField("Password", text: $viewModel.password)
                 .padding()
-            //                       .background(lightGreyColor)
-                .cornerRadius(5.0)
-                .padding(.bottom, 20)
                 .autocapitalization(.none)
                 .disableAutocorrection(true)
+            HStack {
+                Image("user").resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 30, height: 30)
+            SecureField("Password", text: $viewModel.password)
+                    
+                .cornerRadius(5.0)
+                .autocapitalization(.none)
+                .disableAutocorrection(true)
+                
+            }
+            .padding()
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(lineWidth: 1).foregroundColor(viewModel.attempts == 0 ? .clear : .red)).modifier(ShakeEffect(animatableData: Float(viewModel.attempts)))
             
 //            Text("Emails or password is incorrect")
 //                .font(.callout)
 //                .foregroundColor(Color.red)
-            
+           
             AuthLoadingButton(isLoading: viewModel.isLoading, action: {
-                login()
+                    login()
+                
             }, title: "Login")
         }.padding()
         
